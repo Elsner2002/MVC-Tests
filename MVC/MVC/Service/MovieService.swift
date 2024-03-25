@@ -31,8 +31,92 @@ struct MovieService {
     }
     typealias MovieJSON = [String: Any]
     
+    func apiCall(_ tableView: UITableView) {
+        //get the popular movies in API
+        guard let urlP = URL(string: "https://api.themoviedb.org/3/movie/popular?api_key=29e140b5aab9879b19e9118a0af356c9&language=en-US&page=1)") else { return }
+        URLSession.shared.dataTask(with: urlP) { [self] data, response, error in
+            
+            guard let response = response as? HTTPURLResponse,
+                  response.statusCode == 200,
+                  error == nil,
+                  let data = data
+            else {
+                print(error ?? "error")
+                return
+            }
+            
+            self.decodeByManualKeys(data: data, type: .popular)
+            
+            self.reloadData(tableView)
+        }
+        .resume()
+        
+        //get the now playing movies in API
+        guard let urlNP = URL(string: "https://api.themoviedb.org/3/movie/nowPlaying?api_key=29e140b5aab9879b19e9118a0af356c9&language=en-US&page=1") else { return }
+        URLSession.shared.dataTask(with: urlNP) { [self] data, response, error in
+            
+            guard let response = response as? HTTPURLResponse,
+                  response.statusCode == 200,
+                  error == nil,
+                  let data = data
+            else {
+                print(error ?? "error")
+                return
+            }
+            
+            self.decodeByManualKeys(data: data, type: .nowPlaying)
+            
+            self.reloadData(tableView)
+        }
+        .resume()
+    }
+    
+    private func decodeByManualKeys(data: Data, type: Section) {
+        do {
+            
+            guard let rawJSON = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [String: Any],
+                  let json = rawJSON["results"] as? [[String: Any]]
+            else {
+                print("Error while parsing JSON")
+                return
+            }
+            
+            //get the API data info from it's id
+            for movies in json {
+                guard let id = movies["id"] as? Int,
+                      let title = movies["original_title"] as? String,
+                      let overview = movies["overview"] as? String,
+                      let posterPath = movies["poster_path"] as? String,
+                      let voteAverage = movies["vote_average"] //as? Double,
+//                      let genreIDs = movies["genre_ids"] as? [Int]
+                else {
+                    continue
+                }
+                
+                //save in the respective array
+                let movie = Movie(id: id, title: title, overview: overview, voteAverage: voteAverage as! Double, posterPath: posterPath/*, genreIDs: genreIDs*/)
+                switch(type){
+                case .nowPlaying:
+                    MoviesViewController.shared.nowPlaying.append(movie)
+                case .popular:
+                    MoviesViewController.shared.popular.append(movie)
+                }
+            }
+        } catch {
+            print(error)
+        }
+    }
+    
+    private func reloadData(_ tableView: UITableView) {
+        DispatchQueue.main.async {
+            tableView.reloadData()
+        }
+    }
+    
+    
     func fetchMovies(fromPlaylist type: MoviePlaylist = .popular, atPage page: Int = 1) -> AnyPublisher<[Movie], Error> {
         let url = self.buildAPIUrlFor(movieCategory: type.rawValue, atPage: page)
+        #warning("URL errors")
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap(\.data)
             .decode(type: MovieResponse.self, decoder: JSONDecoder())
@@ -45,6 +129,7 @@ struct MovieService {
     
     func fetchMoviePosterFor(posterPath: String, withSize size: PosterSize = .w500) -> AnyPublisher<Data, Error> {
         let url = self.buildPosterURLFor(posterPath: posterPath)
+        #warning("URL errors")
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap(\.data)
             .mapError({ $0 as Error })

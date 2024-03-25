@@ -8,26 +8,26 @@
 import UIKit
 import Combine
 
+//MARK: UITableView Sections
+enum Section: Int, CaseIterable {
+    case nowPlaying
+    case popular
+    
+    var value: String {
+        switch self {
+        case .nowPlaying:
+            return "Now Playing"
+        case .popular:
+            return "Popular"
+        }
+    }
+}
+
 class MoviesViewController {
     
     static let shared = MoviesViewController()
     
     private init() {}
-    
-    //MARK: UITableView Sections
-    enum Section: Int, CaseIterable {
-        case nowPlaying
-        case popular
-        
-        var value: String {
-            switch self {
-            case .nowPlaying:
-                return "Now Playing"
-            case .popular:
-                return "Popular"
-            }
-        }
-    }
     
     private let movieService = MovieService.shared
     private var subscriptions = Set<AnyCancellable>()
