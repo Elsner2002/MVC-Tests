@@ -110,6 +110,7 @@ extension MoviesView: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let currentSection = controller.sections[indexPath.section]
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as? MovieCell else { fatalError() }
+        cell.accessibilityIdentifier = "MovieCell"
         var movie: Movie
         controller.movieInRow(cell: cell, indexPath, tableView)
         if isSearching {

@@ -22,13 +22,25 @@ final class MVCUITests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-    func testExample() throws {
+    func testCellTitle() throws {
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
-
+        
+        let titleLabel = app.staticTexts["titleLabel"]
+        XCTAssertTrue(titleLabel.exists)
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+    
+    func testCellExist() throws {
+        let app = XCUIApplication()
+        app.launch()
+        
+        let cellExists = app.tables.cells["MovieCell"].firstMatch.exists
+        XCTAssertTrue(cellExists, "A célula não existe")
+
+    }
+
 
     func testLaunchPerformance() throws {
         if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {

@@ -19,6 +19,7 @@ class MovieCell: UITableViewCell {
         let title = UILabel()
         title.font = UIFont.preferredFont(forTextStyle: .headline)
         title.translatesAutoresizingMaskIntoConstraints = false
+        title.accessibilityIdentifier = "titleLabel"
         return title
     }()
     let descriptionLabel: UILabel = {
