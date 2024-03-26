@@ -7,6 +7,7 @@
 
 import UIKit
 
+#warning("Ver o que testar da UI")
 class MovieDetailsView: UIViewController, UIScrollViewDelegate {
     
     weak var coordinator: MainCoordinator?

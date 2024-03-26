@@ -8,6 +8,7 @@
 import UIKit
 import Combine
 
+#warning("Ver o que testar da UI")
 class MoviesView: UIViewController {
     weak var coordinator: MainCoordinator?
     
@@ -107,7 +108,7 @@ extension MoviesView: UITableViewDataSource {
         let currentSection = controller.sections[indexPath.section]
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as? MovieCell else { fatalError() }
         var movie: Movie
-        
+        controller.movieInRow(cell: cell, indexPath, tableView)
         if isSearching {
             movie = searchedMovies[indexPath.row]
         } else {

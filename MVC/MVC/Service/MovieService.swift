@@ -31,6 +31,12 @@ struct MovieService {
     }
     typealias MovieJSON = [String: Any]
     
+    var headers = [
+      "accept": "application/json",
+      "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZDRiNGFiYmNmMTM5MmNhNzY5MWJmN2Q5M2Y0MTVjOSIsInN1YiI6IjY0OWM2NDQ0ZmQ0ZjgwMDBlY2IzZTZkNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1KVIGHOCX3Kc8HmFRMQR36R9sMkRVlz81ikniCVMig8"
+    ]
+    
+    #warning("Ver o que testar daqui até 116")
     func apiCall(_ tableView: UITableView) {
         //get the popular movies in API
         guard let urlP = URL(string: "https://api.themoviedb.org/3/movie/popular?api_key=29e140b5aab9879b19e9118a0af356c9&language=en-US&page=1)") else { return }
@@ -50,9 +56,9 @@ struct MovieService {
             self.reloadData(tableView)
         }
         .resume()
-        
+        print("JORGE PASSEI")
         //get the now playing movies in API
-        guard let urlNP = URL(string: "https://api.themoviedb.org/3/movie/nowPlaying?api_key=29e140b5aab9879b19e9118a0af356c9&language=en-US&page=1") else { return }
+        guard let urlNP = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=2d4b4abbcf1392ca7691bf7d93f415c9&language=en-US&page=1") else { return }
         URLSession.shared.dataTask(with: urlNP) { [self] data, response, error in
             
             guard let response = response as? HTTPURLResponse,
@@ -63,7 +69,7 @@ struct MovieService {
                 print(error ?? "error")
                 return
             }
-            
+            print("JORGE ENTREI 3")
             self.decodeByManualKeys(data: data, type: .nowPlaying)
             
             self.reloadData(tableView)
@@ -114,22 +120,20 @@ struct MovieService {
     }
     
     
-    func fetchMovies(fromPlaylist type: MoviePlaylist = .popular, atPage page: Int = 1) -> AnyPublisher<[Movie], Error> {
-        let url = self.buildAPIUrlFor(movieCategory: type.rawValue, atPage: page)
-        #warning("URL errors")
-        return URLSession.shared.dataTaskPublisher(for: url)
-            .tryMap(\.data)
-            .decode(type: MovieResponse.self, decoder: JSONDecoder())
-            .map(\.results)
-            .mapError({ $0 as Error })
-            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
-            .receive(on: DispatchQueue.main)
-            .eraseToAnyPublisher()
-    }
+//    func fetchMovies(fromPlaylist type: MoviePlaylist = .popular, atPage page: Int = 1) -> AnyPublisher<[Movie], Error> {
+//        let url = self.buildAPIUrlFor(movieCategory: type.rawValue, atPage: page)
+//        return URLSession.shared.dataTaskPublisher(for: url)
+//            .tryMap(\.data)
+//            .decode(type: MovieResponse.self, decoder: JSONDecoder())
+//            .map(\.results)
+//            .mapError({ $0 as Error })
+//            .subscribe(on: DispatchQueue.global(qos: .userInitiated))
+//            .receive(on: DispatchQueue.main)
+//            .eraseToAnyPublisher()
+//    }
     
     func fetchMoviePosterFor(posterPath: String, withSize size: PosterSize = .w500) -> AnyPublisher<Data, Error> {
         let url = self.buildPosterURLFor(posterPath: posterPath)
-        #warning("URL errors")
         return URLSession.shared.dataTaskPublisher(for: url)
             .tryMap(\.data)
             .mapError({ $0 as Error })
