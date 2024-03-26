@@ -35,11 +35,18 @@ struct Movie: Decodable, CustomStringConvertible, Hashable {
 }
 
 class MovieDBService {
+    
     static func setupFetchRequest(url urlString: String) -> URLRequest? {
+        
+        let headers = [
+          "accept": "application/json",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZDRiNGFiYmNmMTM5MmNhNzY5MWJmN2Q5M2Y0MTVjOSIsInN1YiI6IjY0OWM2NDQ0ZmQ0ZjgwMDBlY2IzZTZkNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1KVIGHOCX3Kc8HmFRMQR36R9sMkRVlz81ikniCVMig8"
+        ]
+        
         guard let url = URL(string: urlString) else { return nil }
         var request = URLRequest(url: url)
         
-        for (key, value) in MovieService.shared.headers{
+        for (key, value) in headers{
             request.setValue(value, forHTTPHeaderField: key)
         }
         

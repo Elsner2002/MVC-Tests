@@ -31,8 +31,11 @@ class MoviesView: UIViewController {
         super.viewDidLoad()
         title = "Movies"
         navigationController?.navigationBar.prefersLargeTitles = true
-        self.controller.fetchAllMovies(tableView: tableView)
+        self.controller.fetchAllMovies()
         configViews()
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
 
     

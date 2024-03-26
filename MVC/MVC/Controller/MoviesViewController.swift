@@ -29,7 +29,7 @@ class MoviesViewController {
     
     private init() {}
     
-    private let movieService = MovieService.shared
+    private let movieService = MovieService(client: URLSessionClient())
     private var subscriptions = Set<AnyCancellable>()
     
     var sections: [Section] = Section.allCases
@@ -50,12 +50,10 @@ class MoviesViewController {
         }
     }
 
-    private func editCell(cell: MovieCell, _ indexPath: IndexPath, _ tableView: UITableView, movieArray: [Movie], sec: Section) {
+    func editCell(cell: MovieCell, _ indexPath: IndexPath, _ tableView: UITableView, movieArray: [Movie], sec: Section) {
         //get the correct movie to use the info
         let movie = movieArray[indexPath.row]
-        print("Jorge 1")
         if let dataC = movie.imageCover/*, let imageC = UIImage(data: dataC) */{
-            print("Jorge 2")
             var newMovie = movie
             newMovie.imageCover = dataC
         }
@@ -81,8 +79,8 @@ class MoviesViewController {
         cell.ratingLabel.text = "\(movieArray[indexPath.row].voteAverage)"
     }
     
-    func fetchAllMovies(tableView: UITableView) {
-        movieService.apiCall(tableView)
+    func fetchAllMovies() {
+        movieService.apiCall()
 //        movieService.fetchMovies(fromPlaylist: .nowPlaying)
 //            .flatMap({ movies in
 //                movies.publisher
@@ -145,7 +143,6 @@ class MoviesViewController {
     }
 }
 
-#warning("Ver o que testar daqui")
 // MARK: - Cell Configuration Methods
 extension MoviesViewController {
     func configureCell(_ cell: MovieCell, with movie: Movie) {

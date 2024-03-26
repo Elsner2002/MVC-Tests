@@ -9,75 +9,41 @@ import Foundation
 import Combine
 import UIKit
 
-struct MovieService {
-    static let shared = MovieService()
-    
-    private init() {}
-    
-    //MARK: Movie Types
-    enum MoviePlaylist: String {
-        case popular = "popular"
-        case nowPlaying = "now_playing"
-    }
-    //MARK: Poster Sizes
-    enum PosterSize: String {
-        case w92 = "92"
-        case w154 = "154"
-        case w185 = "185"
-        case w342 = "342"
-        case w500 = "500"
-        case w780 = "780"
-        case original = "original"
-    }
-    typealias MovieJSON = [String: Any]
-    
-    var headers = [
-      "accept": "application/json",
-      "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyZDRiNGFiYmNmMTM5MmNhNzY5MWJmN2Q5M2Y0MTVjOSIsInN1YiI6IjY0OWM2NDQ0ZmQ0ZjgwMDBlY2IzZTZkNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1KVIGHOCX3Kc8HmFRMQR36R9sMkRVlz81ikniCVMig8"
-    ]
-    
-    #warning("Ver o que testar daqui até 116")
-    func apiCall(_ tableView: UITableView) {
-        //get the popular movies in API
-        guard let urlP = URL(string: "https://api.themoviedb.org/3/movie/popular?api_key=29e140b5aab9879b19e9118a0af356c9&language=en-US&page=1)") else { return }
-        URLSession.shared.dataTask(with: urlP) { [self] data, response, error in
+protocol Service {
+    func apiCall()
+}
+
+protocol HTTPClient {
+    func perform(_ apiAddress: String)
+}
+
+struct URLSessionClient: HTTPClient {
+    func perform(_ apiAddress: String) {
+        
+        guard let url = URL(string: apiAddress) else { return }
+        
+        URLSession.shared.dataTask(with: url) { dataURL, response, error in
             
             guard let response = response as? HTTPURLResponse,
                   response.statusCode == 200,
                   error == nil,
-                  let data = data
+                  let dataURL = dataURL
             else {
                 print(error ?? "error")
                 return
             }
             
-            self.decodeByManualKeys(data: data, type: .popular)
-            
-            self.reloadData(tableView)
-        }
-        .resume()
-        print("JORGE PASSEI")
-        //get the now playing movies in API
-        guard let urlNP = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=2d4b4abbcf1392ca7691bf7d93f415c9&language=en-US&page=1") else { return }
-        URLSession.shared.dataTask(with: urlNP) { [self] data, response, error in
-            
-            guard let response = response as? HTTPURLResponse,
-                  response.statusCode == 200,
-                  error == nil,
-                  let data = data
-            else {
-                print(error ?? "error")
-                return
+            if apiAddress.contains("popular"){
+                self.decodeByManualKeys(data: dataURL, type: .popular)
             }
-            print("JORGE ENTREI 3")
-            self.decodeByManualKeys(data: data, type: .nowPlaying)
-            
-            self.reloadData(tableView)
+            else {
+                self.decodeByManualKeys(data: dataURL, type: .nowPlaying)
+            }
         }
         .resume()
     }
     
-    private func decodeByManualKeys(data: Data, type: Section) {
+    func decodeByManualKeys(data: Data, type: Section) {
         do {
             
             guard let rawJSON = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [String: Any],
@@ -112,13 +78,41 @@ struct MovieService {
             print(error)
         }
     }
+}
+
+struct MovieService: Service {
     
-    private func reloadData(_ tableView: UITableView) {
-        DispatchQueue.main.async {
-            tableView.reloadData()
-        }
+//    static let shared = MovieService()
+    
+    var client: HTTPClient
+    
+    init(client: HTTPClient) {
+        self.client = client
     }
     
+    //MARK: Movie Types
+    enum MoviePlaylist: String {
+        case popular = "popular"
+        case nowPlaying = "now_playing"
+    }
+    //MARK: Poster Sizes
+    enum PosterSize: String {
+        case w92 = "92"
+        case w154 = "154"
+        case w185 = "185"
+        case w342 = "342"
+        case w500 = "500"
+        case w780 = "780"
+        case original = "original"
+    }
+    typealias MovieJSON = [String: Any]
+    func apiCall() {
+        //get the popular movies in API
+        client.perform("https://api.themoviedb.org/3/movie/popular?api_key=29e140b5aab9879b19e9118a0af356c9&language=en-US&page=1)")
+        
+        //get the now playing movies in API
+        client.perform("https://api.themoviedb.org/3/movie/now_playing?api_key=2d4b4abbcf1392ca7691bf7d93f415c9&language=en-US&page=1")
+    }
     
 //    func fetchMovies(fromPlaylist type: MoviePlaylist = .popular, atPage page: Int = 1) -> AnyPublisher<[Movie], Error> {
 //        let url = self.buildAPIUrlFor(movieCategory: type.rawValue, atPage: page)
