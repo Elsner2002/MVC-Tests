@@ -12,6 +12,7 @@ import MVC
 
 class MockClient: HTTPClient {
     var json = ""
+    var sc = 0
     
     func perform(_ apiAddress: String) {
         json = """
@@ -19,24 +20,42 @@ class MockClient: HTTPClient {
                 
             }
             """
+        
+        sc = 200
     }
     
     func jsonToReturn() -> String {
-        perform("")
         return json
+    }
+    
+    func statusCodeWork() -> Bool {
+        var result = false
+        if sc == 200 {
+            result = true
+        }
+        else {
+            result = false
+        }
+        return result
     }
 }
 
-//struct MockService: Service {
-//    func apiCall() {
-//        
-//        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 2, execute: {
-//            let data = Data()
-//        })
-//        
-//        return data()
-//    }
-//}
+class MockService: Service {
+    
+    var data: Data?
+    
+    func apiCall() {
+        
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 2, execute: {
+            let newData = Data()
+            self.data = newData
+        })
+    }
+    
+    func returnData() -> Data? {
+        return data
+    }
+}
 
 final class MVCTests: XCTestCase {
 
@@ -50,21 +69,27 @@ final class MVCTests: XCTestCase {
 
     func testManualDecode() throws {
         let mc = MockClient()
+        mc.perform("")
         var test = mc.jsonToReturn()
         
-        //
-//        guard let urlNP = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=2d4b4abbcf1392ca7691bf7d93f415c9&language=en-US&page=1") else { return }
-//        URLSession.shared.dataTask(with: urlNP) { data, response, error in
-//            guard let response = response as? HTTPURLResponse,
-//                  response.statusCode == 200,
-//                  error == nil,
-//                  let data = data
-//            else {
-//                print(error ?? "error")
-//                return
-//            }
-//            XCTAssertTrue(MovieService.shared.decodeByManualKeys(data: data, type: .nowPlaying))
-//        }
+        XCTAssertNotNil(test)
+    }
+    
+    func testStatusCode() throws {
+        let mc = MockClient()
+        mc.perform("")
+        var result = mc.statusCodeWork()
+        
+        XCTAssertTrue(result)
+    }
+    
+    func testApiCall() throws {
+        let ms = MockService()
+        ms.apiCall()
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 2, execute: {
+            var result = ms.returnData()
+            XCTAssertNotNil(result)
+        })
     }
     
     func testImageRequest() throws {
