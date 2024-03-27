@@ -8,7 +8,7 @@
 import XCTest
 
 final class MVCUITests: XCTestCase {
-
+    let app = XCUIApplication()
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
 
@@ -23,22 +23,32 @@ final class MVCUITests: XCTestCase {
     }
 
     func testCellTitle() throws {
-        // UI tests must launch the application that they test.
+        app.launch()
         let app = XCUIApplication()
         app.launch()
         
         let titleLabel = app.staticTexts["titleLabel"]
         XCTAssertTrue(titleLabel.exists)
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
     
     func testCellExist() throws {
-        let app = XCUIApplication()
         app.launch()
-        
         let cellExists = app.tables.cells["MovieCell"].firstMatch.exists
         XCTAssertTrue(cellExists, "A célula não existe")
-
+        
+    }
+   
+    func testNavigation() throws {
+        app.launch()
+        let cell = app.tables.cells["MovieCell"].firstMatch
+        XCTAssertTrue(cell.waitForExistence(timeout: 5), "A célula não foi encontrada")
+        
+        let movieTitle = cell.staticTexts.firstMatch.label
+        
+        cell.tap()
+        
+        let movieDetailsNavigationBar = app.navigationBars["movieDetailsNavigationBar"]
+        XCTAssertTrue(movieDetailsNavigationBar.waitForExistence(timeout: 5), "A view de detalhes não foi apresentada")
     }
 
 
