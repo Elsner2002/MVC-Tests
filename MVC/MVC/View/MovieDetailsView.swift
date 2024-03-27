@@ -100,7 +100,8 @@ class MovieDetailsView: UIViewController, UIScrollViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        navigationController?.navigationBar.accessibilityIdentifier = "movieDetailsNavigationBar"
+
         title = "Details"
         
         if let movie = controller.movie {
